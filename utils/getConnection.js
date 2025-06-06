@@ -5,10 +5,10 @@ const getConnection = () => {
   try {
     mongoose
       .connect(DbString)
-      .then((connection) => {
+      .then(() => {
         console.log("Database is Connected");
       })
-      .catch((error) => {
+      .catch(() => {
         console.log("Database failed to Connect");
       });
   } catch (error) {
@@ -16,4 +16,4 @@ const getConnection = () => {
   }
 };
 
-module.exports = getConnection
+module.exports = getConnection;
