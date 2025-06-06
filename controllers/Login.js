@@ -1,35 +1,37 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const joi = require("joi");
+const jwt = require("jsonwebtoken");
 
 const login = async (req, res, next) => {
-  const { error: validationError } = validateLogin(req.body);
-
+  const { email, password } = req.body;
   try {
-    if (validationError) {
-      const error = new Error(validationError.details[0].message);
+    const formatedEmail = email.toLowerCase();
+    const findedUser = await User.findOne({ email: formatedEmail });
+    if (!findedUser) {
+      const error = new Error("Incorrect Email");
       error.statusCode = 400;
       throw error;
     }
 
-    const { email, password } = req.body;
-    const formattedEmail = email.toLowerCase();
-
-    const user = await User.findOne({ email: formattedEmail });
-    if (!user) {
-      const error = new Error("Invalid email or password");
-      error.statusCode = 401;
+    const isPssMatch = await bcrypt.compare(password, findedUser.password);
+    if (!isPssMatch) {
+      const error = new Error("Incorrect Password");
+      error.statusCode = 400;
       throw error;
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      const error = new Error("Invalid email or password");
-      error.statusCode = 401;
-      throw error;
-    }
+    const accessToken = jwt.sign(
+      { email: formatedEmail, userId: findedUser._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
-    res.status(200).json({ message: "Login Successful", status: true });
+    res.status(200).json({
+      message: "Login Successful",
+      status: true,
+      token: accessToken
+    });
   } catch (error) {
     next(error);
   }
