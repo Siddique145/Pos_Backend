@@ -1,19 +1,19 @@
 const mongoose = require("mongoose");
-const DbString = process.env.MONGODB_URI;
 
-const getConnection = () => {
+const getConnection = async () => {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    console.error("❌ MONGODB_URI is not defined in .env file");
+    return;
+  }
+
   try {
-    mongoose
-      .connect(DbString)
-      .then((connection) => {
-        console.log("Database is Connected");
-      })
-      .catch((error) => {
-        console.log("Database failed to Connect");
-      });
+    await mongoose.connect(uri); // No need for options now
+    console.log("✅ MongoDB Connected");
   } catch (error) {
-    console.log(error.message);
+    console.error("❌ Database Connection Failed", error.message);
   }
 };
 
-module.exports = getConnection
+module.exports = getConnection;
