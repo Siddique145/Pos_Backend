@@ -9,6 +9,6 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/forget/password", forgetPassword);
 router.post("/verify/otp", verifyOtp);
-router.post("/verify/opt/time", getOtpTime);
+router.post("/verify/otp/time", getOtpTime);
 
 module.exports = router;

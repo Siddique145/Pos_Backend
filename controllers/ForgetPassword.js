@@ -1,6 +1,7 @@
 const User = require("./../models/User");
 const crypto = require("crypto");
 const sendMail = require("../utils/sendMail");
+
 const forgetPassword = async (req, res, next) => {
   const { email } = req.body;
   try {
@@ -11,6 +12,7 @@ const forgetPassword = async (req, res, next) => {
       error.statusCode = 400;
       throw error;
     }
+
     if (
       findedUser.otp.otp &&
       new Date(findedUser.otp.sendTime).getTime() > new Date().getTime()
@@ -25,15 +27,20 @@ const forgetPassword = async (req, res, next) => {
     }
 
     const token = crypto.randomBytes(32).toString("hex");
-    const otp = Math.floor(Math.random() * 90000) + 100000;
-    findedUser.otp.otp = otp;
-    findedUser.otp.sendTime = new Date().getTime()+1*60*1000;
-     
-    await findedUser.save();                
+    const otp = Math.floor(Math.random() * 900000) + 100000;
+
+    // ✅ Save OTP & Token
+    findedUser.otp = {
+      otp,
+      sendTime: new Date().getTime() + 1 * 60 * 1000,
+      token, // saving token here!
+    };
+
+    await findedUser.save();
 
     sendMail(otp, formatedEmail);
     res.status(200).json({
-      message: "Please Check your Email for Otp",
+      message: "Please check your email for OTP",
       status: true,
       token,
     });
@@ -41,4 +48,5 @@ const forgetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
 module.exports = forgetPassword;
